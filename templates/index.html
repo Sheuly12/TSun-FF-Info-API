@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.75, maximum-scale=1.0, user-scalable=yes">
+    <!-- Fixed viewport for proper mobile scaling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>🔥 TSun - Free Fire Info & Api Doc</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,10 +69,13 @@
                 align-items: center;
                 z-index: 1000;
                 transition: opacity 0.8s ease;
+                padding: 20px;
             }
             .welcome-content {
                 text-align: center;
                 animation: fadeInUp 1s ease;
+                width: 100%;
+                max-width: 600px;
             }
             .welcome-title {
                 font-size: 5rem;
@@ -133,7 +137,7 @@
             }
             .header {
                 text-align: center;
-                padding: 50px 0;
+                padding: 50px 20px;
                 background: rgba(159, 98, 78, 0.15);
                 border-radius: 20px;
                 margin-bottom: 30px;
@@ -177,7 +181,9 @@
                 display: flex;
                 justify-content: center;
                 margin-bottom: 30px;
-                gap: 20px;
+                gap: 10px;
+                flex-wrap: wrap;
+                padding: 0 10px;
             }
             .tab-btn {
                 background: rgba(50, 41, 35, 0.1);
@@ -195,6 +201,7 @@
                 background: linear-gradient(135deg, #9F624E, #B38763);
                 border-color: #9F624E;
                 box-shadow: 0 5px 20px rgba(179, 135, 99, 0.3);
+                color: #F9F6F5;
             }
             .tab-btn:hover:not(.active) {
                 background: rgba(179, 135, 99, 0.15);
@@ -293,6 +300,7 @@
                 backdrop-filter: blur(15px);
                 box-shadow: 0 10px 30px rgba(116, 132, 124, 0.2);
                 transition: transform 0.3s ease;
+                overflow-x: auto;
             }
             .card:hover {
                 transform: translateY(-5px);
@@ -334,6 +342,7 @@
                 margin: 15px 0;
                 border: 1px solid rgba(179, 135, 99, 0.3);
                 backdrop-filter: blur(10px);
+                word-break: break-word;
             }
             .success {
                 color: #74847C;
@@ -356,6 +365,7 @@
                 border-radius: 12px;
                 border-left: 4px solid #9F624E;
                 transition: transform 0.3s ease;
+                word-break: break-word;
             }
             .info-item:hover {
                 transform: translateX(5px);
@@ -370,6 +380,7 @@
                 color: #322923;
                 font-size: 1.2rem;
                 font-weight: bold;
+                word-break: break-word;
             }
             /* Added styles for Statistics bubbles */
             .stats-grid {
@@ -434,6 +445,290 @@
                 text-shadow: none !important;
                 filter: none !important;
             }
+            
+            /* Added comprehensive mobile responsive styles */
+            /* Mobile-First Responsive Design */
+            @media screen and (max-width: 768px) {
+                .container {
+                    padding: 15px 10px;
+                }
+                
+                .welcome-title {
+                    font-size: 2.5rem;
+                    line-height: 1.2;
+                }
+                
+                .welcome-subtitle {
+                    font-size: 1rem;
+                    margin-bottom: 30px;
+                    padding: 0 10px;
+                }
+                
+                .start-btn {
+                    padding: 15px 40px;
+                    font-size: 1.1rem;
+                }
+                
+                .header {
+                    padding: 30px 15px;
+                    margin-bottom: 20px;
+                    border-radius: 15px;
+                }
+                
+                .brand {
+                    font-size: 2rem;
+                    line-height: 1.2;
+                }
+                
+                .tagline {
+                    font-size: 1rem;
+                    margin-bottom: 10px;
+                }
+                
+                .tab-container {
+                    gap: 8px;
+                    margin-bottom: 20px;
+                    flex-direction: column;
+                    align-items: stretch;
+                    padding: 0 5px;
+                }
+                
+                .tab-btn {
+                    padding: 12px 20px;
+                    font-size: 0.95rem;
+                    width: 100%;
+                    text-align: center;
+                }
+                
+                .search-box {
+                    padding: 20px 15px;
+                    margin: 20px 0;
+                    border-radius: 15px;
+                }
+                
+                .search-box h3 {
+                    font-size: 1.1rem !important;
+                    margin-bottom: 15px !important;
+                }
+                
+                .form-input {
+                    padding: 15px;
+                    font-size: 16px; /* Prevents zoom on iOS */
+                }
+                
+                .btn {
+                    padding: 15px 25px;
+                    font-size: 16px;
+                }
+                
+                .card {
+                    padding: 20px 15px;
+                    margin: 15px 0;
+                    border-radius: 15px;
+                }
+                
+                .card h3 {
+                    font-size: 1.3rem !important;
+                    margin-bottom: 15px !important;
+                }
+                
+                .info-grid,
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                    gap: 12px;
+                    margin: 15px 0;
+                }
+                
+                .info-item,
+                .stat-card {
+                    padding: 15px;
+                }
+                
+                .info-label,
+                .stat-label {
+                    font-size: 0.85rem;
+                }
+                
+                .info-value,
+                .stat-value {
+                    font-size: 1rem;
+                }
+                
+                .section-title {
+                    font-size: 1.2rem;
+                    margin: 20px 0 15px 0;
+                }
+                
+                .region-badge {
+                    padding: 8px 15px;
+                    font-size: 0.95rem;
+                }
+                
+                .rank-badge {
+                    padding: 6px 12px;
+                    font-size: 0.85rem;
+                }
+                
+                .loading p {
+                    font-size: 0.95rem !important;
+                    padding: 0 10px;
+                }
+                
+                .spinner {
+                    width: 50px;
+                    height: 50px;
+                }
+                
+                .error,
+                .success {
+                    padding: 15px;
+                    font-size: 0.95rem;
+                }
+                
+                .credit {
+                    font-size: 0.85rem;
+                    padding: 15px 10px;
+                }
+                
+                .outfit-image {
+                    margin: 15px 0;
+                }
+            }
+            
+            /* Small mobile devices */
+            @media screen and (max-width: 480px) {
+                .welcome-title {
+                    font-size: 2rem;
+                }
+                
+                .welcome-subtitle {
+                    font-size: 0.9rem;
+                }
+                
+                .start-btn {
+                    padding: 12px 35px;
+                    font-size: 1rem;
+                }
+                
+                .brand {
+                    font-size: 1.6rem;
+                }
+                
+                .tagline {
+                    font-size: 0.9rem;
+                }
+                
+                .tab-btn {
+                    padding: 10px 15px;
+                    font-size: 0.9rem;
+                }
+                
+                .search-box {
+                    padding: 15px 12px;
+                }
+                
+                .card {
+                    padding: 15px 12px;
+                }
+                
+                .card h3 {
+                    font-size: 1.1rem !important;
+                }
+                
+                .section-title {
+                    font-size: 1.1rem;
+                }
+                
+                .info-item,
+                .stat-card {
+                    padding: 12px;
+                }
+            }
+            
+            /* Tablet devices */
+            @media screen and (min-width: 769px) and (max-width: 1024px) {
+                .welcome-title {
+                    font-size: 3.5rem;
+                }
+                
+                .brand {
+                    font-size: 3rem;
+                }
+                
+                .info-grid,
+                .stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                
+                .tab-container {
+                    flex-wrap: nowrap;
+                }
+            }
+            
+            /* Touch device optimizations */
+            @media (hover: none) and (pointer: coarse) {
+                .btn:hover,
+                .start-btn:hover,
+                .tab-btn:hover:not(.active),
+                .card:hover,
+                .info-item:hover,
+                .stat-card:hover,
+                .outfit-image:hover {
+                    transform: none;
+                }
+                
+                .btn:active,
+                .start-btn:active,
+                .tab-btn:active {
+                    transform: scale(0.98);
+                }
+            }
+            
+            /* Landscape mobile */
+            @media screen and (max-height: 500px) and (orientation: landscape) {
+                .welcome-screen {
+                    padding: 10px;
+                }
+                
+                .welcome-title {
+                    font-size: 2rem;
+                    margin-bottom: 10px;
+                }
+                
+                .welcome-subtitle {
+                    font-size: 0.9rem;
+                    margin-bottom: 15px;
+                }
+                
+                .start-btn {
+                    padding: 10px 30px;
+                    font-size: 1rem;
+                }
+            }
+            
+            /* Smooth scrolling for all devices */
+            html {
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Prevent horizontal overflow */
+            body {
+                overflow-x: hidden;
+            }
+            
+            /* Better touch targets */
+            @media (pointer: coarse) {
+                .btn,
+                .start-btn,
+                .tab-btn {
+                    min-height: 44px;
+                }
+                
+                .form-input {
+                    min-height: 48px;
+                }
+            }
         </style>
     </head>
     <body>
@@ -446,7 +741,7 @@
         <!-- Welcome Screen -->
         <div class="welcome-screen" id="welcomeScreen">
             <div class="welcome-content">
-                <div class="welcome-title"><span class="emoji-color">🔥</span> TSun Info Api</div>
+                <div class="welcome-title"><span class="emoji-color">🔥</span> TSun Info</div>
                 <div class="welcome-subtitle">Free Fire Account Information & Api Doc</div>
                 <button class="start-btn" onclick="startApp()">CLICK TO Enter</button>
             </div>
@@ -903,7 +1198,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.75, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>🔥 TSun - Free Fire API Documentation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
