@@ -47,12 +47,22 @@ async def json_to_proto(json_data: str, proto_message: Message) -> bytes:
 
 def get_account_credentials(region: str) -> str:
     r = region.upper()
-    if r in {"NA", "EU", "ID", "TH", "VN", "SG", "PK", "MY", "PH", "RU", "AFR"}:
+    if r == "PK":
         return "uid=4151822318&password=XG5REDGWOTSC9YNO1EJBXSUU3OSN5IDALZ8VW81BP15PVAZVSXX3GNXJOY8Q6SLN"
     elif r == "BD":
         return "uid=4260559999&password=saeedxmotoxkaka_3PJ4Z1XNC3Q"
-    elif r in {"BR", "US", "SAC", "ME"}:
+    elif r == "ME":
         return "uid=4260531157&password=saeedxmotoxkaka_J7FAA5VUJ1H"
+    elif r == "SAC":
+        return "uid=4260531157&password=saeedxmotoxkaka_J7FAA5VUJ1H"
+    elif r == "IND":
+        return "uid=4213341828&password=WIND-0GAT2HKEN-X"
+    elif r == "NA":
+        return "uid=4051729572&password=0FE5F51725509983A8369EAACCA1F2B2CCB15F2F027163FC32BFA2AA307C58E3"
+    elif r == "US":
+        return "uid=4038272419&password=A82E0644DF741410E73E2AFA5AD1013F96B414A137C9932DF14D72BB87E6A479"
+    elif r == "BR":
+        return "uid=3777206502&password=D6087F88FCC7D0E5820A8669460F901CF857342BFD8D52CC1037049C32DBF255"
     else:
         return "uid=4213341828&password=WIND-0GAT2HKEN-X"
 
@@ -61,32 +71,45 @@ async def get_access_token(account: str):
     url = "https://ffmconnect.live.gop.garenanow.com/oauth/guest/token/grant"
     payload = account + "&response_type=token&client_type=2&client_secret=2ee44819e9b4598845141067b281621874d0d5d7af9d8f7e00c1e54715b7d1e3&client_id=100067"
     headers = {'User-Agent': USERAGENT, 'Connection': "Keep-Alive", 'Accept-Encoding': "gzip", 'Content-Type': "application/x-www-form-urlencoded"}
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         resp = await client.post(url, data=payload, headers=headers)
         data = resp.json()
-        return data.get("access_token", "0"), data.get("open_id", "0")
+        access_token = data.get("access_token", "0")
+        open_id = data.get("open_id", "0")
+        uid = account.split('&')[0].split('=')[1]  # Extract UID from the account string
+        print(f"Uid: {uid[:5]} Access Token: {access_token[:8]}...", flush=True)  # Log the UID and access token
+        return access_token, open_id
 
 async def create_jwt(region: str):
-    account = get_account_credentials(region)
-    token_val, open_id = await get_access_token(account)
-    body = json.dumps({"open_id": open_id, "open_id_type": "4", "login_token": token_val, "orign_platform_type": "4"})
-    proto_bytes = await json_to_proto(body, FreeFire_pb2.LoginReq())
-    payload = aes_cbc_encrypt(MAIN_KEY, MAIN_IV, proto_bytes)
-    url = "https://loginbp.ggpolarbear.com/MajorLogin"
-    headers = {
-        'User-Agent': USERAGENT, 'Connection': "Keep-Alive", 'Accept-Encoding': "gzip",
-        'Content-Type': "application/octet-stream", 'Expect': "100-continue",
-        'X-Unity-Version': "2018.4.11f1", 'X-GA': "v1 1", 'ReleaseVersion': RELEASEVERSION
-    }
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(url, data=payload, headers=headers)
-        msg = json.loads(json_format.MessageToJson(decode_protobuf(resp.content, FreeFire_pb2.LoginRes)))
-        cached_tokens[region] = {
-            'token': f"Bearer {msg.get('token','0')}",
-            'region': msg.get('lockRegion','0'),
-            'server_url': msg.get('serverUrl','0'),
-            'expires_at': time.time() + 25200
-        }
+    try:
+        creds = get_account_credentials(region)
+        # Parse credentials
+        parts = creds.split('&')
+        uid = parts[0].split('=')[1]
+        password = parts[1].split('=')[1]
+        
+        url = f"https://jwt.tsunstudio.pw/v1/auth/saeed?uid={uid}&password={password}"
+        
+        async with httpx.AsyncClient(verify=False) as client:
+            resp = await client.get(url)
+            if resp.status_code == 200:
+                data = resp.json()
+                token = f"Bearer {data.get('token')}"
+                lock_region = data.get('lockRegion')
+                server_url = data.get('serverUrl')
+                
+                print(f"uid: {uid[:5]}, region= {lock_region}, token= {token[:30]}...", flush=True)
+                
+                cached_tokens[region] = {
+                    'token': token,
+                    'region': lock_region,
+                    'server_url': server_url,
+                    'expires_at': time.time() + 25200
+                }
+            else:
+                print(f"FAIL Region: {region} | Status: {resp.status_code} | Content: {resp.text}", flush=True)
+    except Exception as e:
+        print(f"Error in create_jwt for {region}: {e}", flush=True)
 
 async def initialize_tokens():
     tasks = [create_jwt(r) for r in SUPPORTED_REGIONS]
@@ -115,9 +138,16 @@ async def GetAccountInformation(uid, unk, region, endpoint):
         'Authorization': token, 'X-Unity-Version': "2018.4.11f1", 'X-GA': "v1 1",
         'ReleaseVersion': RELEASEVERSION
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         resp = await client.post(server + endpoint, data=data_enc, headers=headers)
-        return json.loads(json_format.MessageToJson(decode_protobuf(resp.content, AccountPersonalShow_pb2.AccountPersonalShowInfo)))
+        # print(f"DEBUG: GetAccountInfo {uid} {region} | Server: {server} | Status: {resp.status_code} | Len: {len(resp.content)}", flush=True)
+        if resp.status_code != 200:
+            print(f"API Error: {resp.status_code} | Content: {resp.content[:200]}", flush=True)
+        try:
+            return json.loads(json_format.MessageToJson(decode_protobuf(resp.content, AccountPersonalShow_pb2.AccountPersonalShowInfo)))
+        except Exception as e:
+            print(f"Protobuf Decode Error for UID {uid}: {e} | Status: {resp.status_code} | Content (Hex): {resp.content.hex()[:100]}", flush=True)
+            raise e
 
 def format_response(data):
     return {
@@ -172,17 +202,42 @@ async def get_account_info():
     if not uid:
         return jsonify({"error": "Please provide UID."}), 400
     
-    try:
-        # Default region
-        region = "PK"
-        
-        # Get account information
-        return_data = await GetAccountInformation(uid, "7", region, "/GetPlayerPersonalShow")
-        formatted = format_response(return_data)
-        return jsonify(formatted), 200
+    region_param = request.args.get('region')
+    region = (region_param or "PK").upper()
     
+    try:
+        # Try primary region
+        return_data = await GetAccountInformation(uid, "7", region, "/GetPlayerPersonalShow")
+    except Exception:
+        # If failed and no region specified, try auto-detection
+        if not region_param:
+            found = False
+            # Prioritize common regions
+            for r in ["IND", "BR", "US", "SAC", "NA", "SG", "ID", "VN", "TH", "ME", "RU", "EU", "BD"]:
+                if r == region: continue
+                try:
+                    # print(f"Trying region {r} for UID {uid}...", flush=True)
+                    return_data = await GetAccountInformation(uid, "7", r, "/GetPlayerPersonalShow")
+                    found = True
+                    region = r # Update region for response
+                    break
+                except Exception:
+                    continue
+            
+            if not found:
+                return jsonify({"error": "Account not found in any region."}), 404
+        else:
+            return jsonify({"error": f"Account not found in region {region}."}), 404
+
+    try:
+        formatted = format_response(return_data)
+        # Add detected region to response if not present
+        if "AccountRegion" not in formatted["AccountInfo"] or not formatted["AccountInfo"]["AccountRegion"]:
+             formatted["AccountInfo"]["AccountRegion"] = region
+        return jsonify(formatted), 200
     except Exception as e:
-        return jsonify({"error": "Invalid UID or server error. Please try again."}), 500
+        print(f"Error formatting response: {e}", flush=True)
+        return jsonify({"error": "Error processing account data."}), 500
 
 @app.route('/refresh', methods=['GET', 'POST'])
 def refresh_tokens_endpoint():
@@ -199,8 +254,8 @@ async def get_region_info():
         return jsonify({"error": "Please provide UID."}), 400
     
     try:
-        # Default region for region check
-        region = "PK" 
+        # Get region from request, default to PK
+        region = request.args.get('region', 'PK').upper()
         
         # Get account information to extract region
         # We only need basicInfo.region, so we can optimize this later if needed
@@ -216,6 +271,7 @@ async def get_region_info():
             return jsonify({"error": "Region information not found for this UID."}), 404
             
     except Exception as e:
+        print(f"Error fetching region for UID {uid}: {e}", flush=True)
         return jsonify({"error": f"Failed to fetch region information: {e}"}), 500
 
 @app.route('/')
