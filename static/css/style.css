@@ -603,3 +603,94 @@ a:hover {
         grid-template-columns: 1fr;
     }
 }
+/* JSON Viewer Styles */
+.json-viewer {
+    max-height: 600px;
+    overflow: auto;
+    background: #000;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.json-code {
+    margin: 0;
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #a0a0a0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* JSON Syntax Highlighting */
+.json-key {
+    color: #00f2ff; /* Cyan for keys */
+    font-weight: 600;
+}
+
+.json-string {
+    color: #00ff9d; /* Green for string values */
+}
+
+.json-number {
+    color: #bd00ff; /* Purple for numbers */
+}
+
+.json-boolean {
+    color: var(--primary); /* Orange for booleans */
+    font-weight: 700;
+}
+
+.json-null {
+    color: #ff2a6d; /* Pink/red for null */
+    font-style: italic;
+}
+
+/* Copy Button */
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.copy-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Scrollbar Styling for JSON Viewer */
+.json-viewer::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.json-viewer::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.json-viewer::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.json-viewer::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}

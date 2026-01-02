@@ -45,6 +45,18 @@ function initForms() {
     if (regionForm) {
         regionForm.addEventListener('submit', handleRegionCheck);
     }
+
+    // Full Response Form
+    const fullResponseForm = document.getElementById('fullResponseForm');
+    if (fullResponseForm) {
+        fullResponseForm.addEventListener('submit', handleFullResponse);
+    }
+
+    // Copy JSON Button
+    const copyBtn = document.getElementById('copyJsonBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyJsonToClipboard);
+    }
 }
 
 function animateIntro() {
@@ -128,6 +140,40 @@ async function handleRegionCheck(e) {
         loadingEl.style.display = 'none';
         resultsEl.style.display = 'block';
         showError(regionContent, `Network Error: ${error.message}`);
+    }
+}
+
+async function handleFullResponse(e) {
+    e.preventDefault();
+    const uidInput = document.getElementById('fullResponseUid');
+    const uid = uidInput.value.trim();
+
+    if (!uid) return;
+
+    const loadingEl = document.getElementById('fullResponseLoading');
+    const resultsEl = document.getElementById('fullResponseResults');
+    const jsonViewer = document.getElementById('jsonViewer');
+
+    loadingEl.style.display = 'flex';
+    resultsEl.style.display = 'none';
+    jsonViewer.innerHTML = '';
+
+    try {
+        const response = await fetch(`/get?uid=${uid}`);
+        const data = await response.json();
+
+        loadingEl.style.display = 'none';
+        resultsEl.style.display = 'block';
+
+        // Store data for copy function
+        window.currentJsonData = data;
+
+        // Render formatted JSON
+        renderFormattedJson(data, jsonViewer);
+    } catch (error) {
+        loadingEl.style.display = 'none';
+        resultsEl.style.display = 'block';
+        showError(jsonViewer, `Network Error: ${error.message}`);
     }
 }
 
@@ -221,13 +267,16 @@ function renderAccountInfo(data, uid) {
 function renderRegionInfo(data) {
     const regionContent = document.getElementById('regionContent');
 
+    const flagHtml = getRegionFlag(data.region);
+    const isImageFlag = flagHtml.includes('<img');
+    
     regionContent.innerHTML = `
         <div class="data-card" style="max-width: 500px; margin: 0 auto;">
             <div class="card-header">
                 <div class="card-title"><span class="card-icon">🌍</span> Region Check</div>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 3rem; margin-bottom: 10px;">${getRegionFlag(data.region)}</div>
+                <div style="${isImageFlag ? 'margin-bottom: 10px;' : 'font-size: 3rem; margin-bottom: 10px;'}">${flagHtml}</div>
                 <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">${data.region}</div>
             </div>
             <div class="info-row">
@@ -263,9 +312,14 @@ function escapeHtml(text) {
 }
 
 function formatTimestamp(timestamp) {
+    // If timestamp is already formatted (contains space or hyphen), return as-is
+    if (timestamp && typeof timestamp === 'string' && (timestamp.includes(' ') || timestamp.includes('-'))) {
+        return timestamp;
+    }
+    
     if (!timestamp) return 'Unknown';
-    // Check if timestamp is in seconds (10 digits) or milliseconds (13 digits)
-    // Most game APIs use seconds.
+    
+    // Legacy fallback for numeric timestamps
     let date;
     if (String(timestamp).length <= 10) {
         date = new Date(parseInt(timestamp) * 1000);
@@ -284,13 +338,86 @@ function formatNumber(num) {
 }
 
 function getRegionFlag(region) {
-    const flags = {
-        'IND': '🇮🇳', 'BR': '🇧🇷', 'NA': '🇺🇸', 'EU': '🇪🇺',
-        'ID': '🇮🇩', 'TW': '🇹🇼', 'VN': '🇻🇳', 'TH': '🇹🇭',
-        'ME': '🌍', 'BD': '🇧🇩', 'PK': '🇵🇰', 'RU': '🇷🇺',
-        'SAC': '🌎', 'US': '🇺🇸'
+    // Special emoji cases for ME, EU, SAC
+    const emojiFlags = {
+        'ME': '🌍',
+        'EU': '🌏',
+        'SAC': '🌎'
     };
-    return flags[region] || '🏳️';
+    
+    if (emojiFlags[region]) {
+        return emojiFlags[region];
+    }
+    
+    // PNG image flags (available in /flages folder)
+    const pngFlags = {
+        'BD': 'bd.png',
+        'BR': 'br.png',
+        'ID': 'id.png',
+        'IND': 'ind.png',
+        'NA': 'na.png',
+        'PK': 'pk.png',
+        'RU': 'ru.png',
+        'TH': 'th.png',
+        'TW': 'tw.png',
+        'US': 'us.png',
+        'VN': 'vn.png'
+    };
+    
+    if (pngFlags[region]) {
+        return `<img src="/flages/${pngFlags[region]}" alt="${region}" style="width: 40px; height: 27px; vertical-align: middle; border-radius: 2px;">`;
+    }
+    
+    // Fallback for regions without PNG or emoji
+    return '🏳️';
+}
+
+function renderFormattedJson(data, container) {
+    const formatted = JSON.stringify(data, null, 2);
+    const highlighted = syntaxHighlightJson(formatted);
+    container.innerHTML = `<pre class="json-code">${highlighted}</pre>`;
+}
+
+function syntaxHighlightJson(json) {
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+            } else {
+                cls = 'json-string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+function copyJsonToClipboard() {
+    if (!window.currentJsonData) {
+        alert('No data to copy!');
+        return;
+    }
+
+    const jsonString = JSON.stringify(window.currentJsonData, null, 2);
+
+    navigator.clipboard.writeText(jsonString).then(() => {
+        const btn = document.getElementById('copyJsonBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+        btn.style.background = 'var(--success)';
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(err => {
+        alert('Failed to copy: ' + err);
+    });
 }
 
 // Rank Calculations (Simplified logic based on typical FF points)

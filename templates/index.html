@@ -35,6 +35,7 @@
             <!-- Navigation -->
             <nav class="nav-tabs">
                 <button class="nav-btn active" data-target="fullInfo">Player Info</button>
+                <button class="nav-btn" data-target="fullResponse">Full Response</button>
                 <button class="nav-btn" data-target="regionCheck">Region Check</button>
                 <button class="nav-btn" data-target="apiDoc">API Docs</button>
             </nav>
@@ -77,7 +78,46 @@
                 </div>
             </section>
 
-            <!-- Tab 2: Region Check -->
+            <!-- Tab 2: Full Response -->
+            <section id="fullResponse" class="tab-content">
+                <div class="search-interface">
+                    <h1 class="search-title">Full API Response</h1>
+                    <p class="search-subtitle">View the complete JSON response from the API.</p>
+
+                    <form id="fullResponseForm">
+                        <div class="input-group">
+                            <input type="text" class="search-input" id="fullResponseUid" placeholder="Enter Player UID..." required
+                                autocomplete="off">
+                            <button type="submit" class="action-btn">Fetch Data</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="fullResponseLoading" class="loading-container">
+                    <div class="loader"></div>
+                    <p style="margin-top: 15px; color: var(--text-muted);">Fetching complete API response...</p>
+                </div>
+
+                <div id="fullResponseResults" style="display: none; margin-top: 30px;">
+                    <div class="data-card">
+                        <div class="card-header">
+                            <div class="card-title"><span class="card-icon">📋</span> JSON Response</div>
+                            <button id="copyJsonBtn" class="copy-btn" title="Copy to clipboard">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copy
+                            </button>
+                        </div>
+                        <div id="jsonViewer" class="json-viewer">
+                            <!-- JS will inject formatted JSON here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 3: Region Check -->
             <section id="regionCheck" class="tab-content">
                 <div class="search-interface">
                     <h1 class="search-title">Region Locator</h1>
