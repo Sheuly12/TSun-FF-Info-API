@@ -269,7 +269,7 @@ function renderRegionInfo(data) {
 
     const flagHtml = getRegionFlag(data.region);
     const isImageFlag = flagHtml.includes('<img');
-    
+
     regionContent.innerHTML = `
         <div class="data-card" style="max-width: 500px; margin: 0 auto;">
             <div class="card-header">
@@ -316,9 +316,9 @@ function formatTimestamp(timestamp) {
     if (timestamp && typeof timestamp === 'string' && (timestamp.includes(' ') || timestamp.includes('-'))) {
         return timestamp;
     }
-    
+
     if (!timestamp) return 'Unknown';
-    
+
     // Legacy fallback for numeric timestamps
     let date;
     if (String(timestamp).length <= 10) {
@@ -344,11 +344,11 @@ function getRegionFlag(region) {
         'EU': '🌏',
         'SAC': '🌎'
     };
-    
+
     if (emojiFlags[region]) {
         return emojiFlags[region];
     }
-    
+
     // PNG image flags (available in /flages folder)
     const pngFlags = {
         'BD': 'bd.png',
@@ -363,11 +363,11 @@ function getRegionFlag(region) {
         'US': 'us.png',
         'VN': 'vn.png'
     };
-    
+
     if (pngFlags[region]) {
         return `<img src="/flages/${pngFlags[region]}" alt="${region}" style="width: 40px; height: 27px; vertical-align: middle; border-radius: 2px;">`;
     }
-    
+
     // Fallback for regions without PNG or emoji
     return '🏳️';
 }
