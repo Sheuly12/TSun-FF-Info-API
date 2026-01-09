@@ -312,25 +312,43 @@ function escapeHtml(text) {
 }
 
 function formatTimestamp(timestamp) {
-    // If timestamp is already formatted (contains space or hyphen), return as-is
-    if (timestamp && typeof timestamp === 'string' && (timestamp.includes(' ') || timestamp.includes('-'))) {
-        return timestamp;
-    }
-
     if (!timestamp) return 'Unknown';
 
-    // Legacy fallback for numeric timestamps
     let date;
-    if (String(timestamp).length <= 10) {
-        date = new Date(parseInt(timestamp) * 1000);
-    } else {
-        date = new Date(parseInt(timestamp));
+
+    // Handle string inputs
+    if (typeof timestamp === 'string') {
+        // If it starts with yyyy-mm-dd, return just that part
+        const match = timestamp.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (match) return match[1];
+
+        // Try to parse other string formats
+        if (isNaN(timestamp)) {
+            date = new Date(timestamp);
+            if (isNaN(date.getTime())) return timestamp;
+        } else {
+            // String containing a number
+            timestamp = parseInt(timestamp);
+        }
     }
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
+
+    // Handle numeric inputs
+    if (typeof timestamp === 'number') {
+        if (String(timestamp).length <= 10) {
+            date = new Date(timestamp * 1000);
+        } else {
+            date = new Date(timestamp);
+        }
+    }
+
+    if (date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    return 'Unknown';
 }
 
 function formatNumber(num) {
